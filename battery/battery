@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+
+reg = "Battery %d: (\w+), (\d+)%%(, (\d+:\d+):\d+ .+)?"
+bat_number = int(os.getenv("BLOCK_INSTANCE", 1) or 1)
+# icons: plug, battery full to empty
+icons = list(u"\uf1e6\uf240\uf241\uf242\uf243\uf244")
+colors = ("#bdd4d7", "#bdd4d7", "#a8ff00", "#fff600", "#ffae00", "#ff0000")
+threshold = (100, 80, 60, 40, 20, 0)
+root = "/sys/class/power_supply/BAT%d" % bat_number
+
+capacity = int(open(root + "/capacity").read())
+energy_now = int(open(root + "/energy_now").read())
+energy_full = int(open(root + "/energy_full").read())
+status = open(root + "/status").read().strip()
+
+if os.path.exists(root + "/power_now"):
+    power = int(open(root + "/power_now").read())
+elif os.path.exists(root + "/voltage_now") \
+        and os.path.exists(root + "/current_now"):
+    voltage = int(open(root + "/voltage_now").read())
+    current = int(open(root + "/current_now").read())
+    power = current * voltage
+
+level = 0
+if status == "Discharging":
+    while capacity <= threshold[level]:
+        level += 1
+
+text = u"{} {}%".format(icons[level], capacity)
+
+if power > 0:
+    if status == "Discharging":
+        r = energy_now / float(power)
+    else:
+        r = (energy_full - energy_now) / float(power)
+
+    remaining = "{}:{:02.0f}".format(int(r), (r - int(r)) * 60)
+    if remaining:
+        text += " / " + remaining
+
+if round(power / 1e6) > 0 and status == "Discharging":
+    text += " / {:.0f} W".format(round(power / 1e6))
+
+print(text)
+print(text)
+print(colors[level])
+
+if capacity <= 5:
+    sys.exit(33)
