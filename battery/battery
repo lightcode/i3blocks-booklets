@@ -7,7 +7,7 @@ reg = "Battery %d: (\w+), (\d+)%%(, (\d+:\d+):\d+ .+)?"
 bat_number = int(os.getenv("BLOCK_INSTANCE", 1) or 1)
 # icons: plug, battery full to empty
 icons = list(u"\uf1e6\uf240\uf241\uf242\uf243\uf244")
-colors = ("#bdd4d7", "#bdd4d7", "#a8ff00", "#fff600", "#ffae00", "#ff0000")
+colors = ("#ffffff", "#ffffff", "#a8ff00", "#fff600", "#ffae00", "#ff0000")
 threshold = (100, 80, 60, 40, 20, 0)
 root = "/sys/class/power_supply/BAT%d" % bat_number
 
